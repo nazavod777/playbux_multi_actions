@@ -24,6 +24,11 @@ class WatchToEarn:
         try:
             r = self.session.get(url='https://www.playbux.co/api/v2/watch-to-earn/session')
 
+            if r.json().get('msg') and r.json()['msg'] == 'success' and not r.json()['data']:
+                r = self.session.get(url='https://kawayiyi.com/tls')
+
+                return r.json()['tlsHashMd5']
+
             return r.json()['data']['fingerprint']
 
         except Exception as error:

@@ -1,3 +1,4 @@
 from core.playbux_auth import playbux_auth_start
 from core.watch_to_earn import watch_to_earn_start
 from core.daily_check_in import daily_check_in_start
+from core.play_craw_games import play_craw_games_start

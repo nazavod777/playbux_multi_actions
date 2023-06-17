@@ -9,7 +9,7 @@ from web3.auto import w3
 from web3.exceptions import TimeExhausted
 from web3.types import TxReceipt
 
-from constants import RPC_URL, playbux_quest_abi, PLAYBUX_QUEST_CONTRACT_ADDRESS, WAIT_TRANSACTION_RESULT
+from constants import RPC_URL, playbux_quest_abi, PLAYBUX_QUEST_CONTRACT_ADDRESS
 from core import playbux_auth_start
 from utils import get_gwei, get_nonce, get_chain_id
 from utils import logger
@@ -43,12 +43,34 @@ class DailyCheckIn:
 
             return self.check_available_check_in(address=address)
 
+    def complete_quest(self,
+                       transaction_hash: str) -> bool:
+        try:
+            r = self.session.post('https://www.playbux.co/api/v2/quests/confirm-quests',
+                                  json={
+                                      'txId': transaction_hash
+                                  })
+
+            if r.json().get('error'):
+                logger.error(f'{self.account_email} | Ошибка при подтверждении транзакции на '
+                             f'Daily Check-in: {r.json()["error"]}')
+
+                return self.complete_quest(transaction_hash=transaction_hash)
+
+            return r.json()['success']
+
+        except Exception as error:
+            logger.error(f'{self.account_email} | Ошибка при подтверждении транзакции на Daily Check-in: {error}')
+
+            return self.complete_quest(transaction_hash=transaction_hash)
+
     def main(self) -> None:
         account: LocalAccount = Account.from_key(private_key=self.account_private_key)
 
         is_available_check_in, hashed_user = self.check_available_check_in(address=account.address)
 
         if is_available_check_in:
+            logger.info(f'{self.account_email} | Daily Check-in уже заклеймлен')
             return
 
         web3_provider: web3.main.Web3 = Web3(Web3.HTTPProvider(RPC_URL))
@@ -78,21 +100,28 @@ class DailyCheckIn:
 
         logger.info(f'{self.account_email} | Транзакция на Daily Check-in отправлена, TX Hash: {transaction_hash}')
 
-        if WAIT_TRANSACTION_RESULT:
-            try:
-                transaction_response: TxReceipt = web3_provider.eth.wait_for_transaction_receipt(
-                    transaction_hash=transaction_hash)
+        try:
+            transaction_response: TxReceipt = web3_provider.eth.wait_for_transaction_receipt(
+                transaction_hash=transaction_hash)
 
-            except TimeExhausted:
-                logger.error(f'{self.account_email} | Не удалось дождаться завершения транзакции, '
-                             f'TX Hash: {transaction_hash}')
-                return
+        except TimeExhausted:
+            logger.error(f'{self.account_email} | Не удалось дождаться завершения транзакции, '
+                         f'TX Hash: {transaction_hash}')
+            return
 
-            if transaction_response.status == 1:
-                logger.success(f'{self.account_email} | {transaction_hash}')
+        if transaction_response.status == 1:
+            self.session.headers.update({
+                'content-type': 'application/json',
+            })
 
-            else:
-                logger.error(f'{self.account_email} | {transaction_hash}')
+            logger.success(f'{self.account_email} | {transaction_hash}')
+
+            if self.complete_quest(transaction_hash=transaction_hash):
+                logger.success(f'{self.account_email} | Успешно заклеймил Daily Check-in')
+
+            return
+
+        logger.error(f'{self.account_email} | {transaction_hash}')
 
 
 def daily_check_in_start(account_data: dict) -> None:

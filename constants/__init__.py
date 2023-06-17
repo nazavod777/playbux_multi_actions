@@ -8,4 +8,11 @@ with open('settings.json', 'r', encoding='utf-8-sig') as file:
 
 PLAYBUX_QUEST_CONTRACT_ADDRESS: str = '0x93C2260EE41b285C9Bbf98c6B9FFfbd3D62fcA36'
 RPC_URL: str = settings_json['rpc_url']
-WAIT_TRANSACTION_RESULT: bool = settings_json['wait_transaction_result']
+AVAILABLE_CRAW_GAMES: dict = {
+    1: 'pilot',
+    2:'pirate',
+    3: 'breakfast',
+    4: 'woodie',
+    5: 'hooper',
+    6: 'dino'
+}

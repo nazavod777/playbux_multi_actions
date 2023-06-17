@@ -1,6 +1,7 @@
 from json import load
 from multiprocessing.dummy import Pool
 
+from core import play_craw_games_start
 from core import watch_to_earn_start, daily_check_in_start
 from utils import logger
 
@@ -14,6 +15,7 @@ if __name__ == '__main__':
 
     user_action: int = int(input('\n1. Watch To Earn'
                                  '\n2. Daily Check-in'
+                                 '\n3. Play Claw Machine'
                                  '\nВыберите ваше действие: '))
     threads: int = int(input('Threads: '))
     print('')
@@ -26,6 +28,19 @@ if __name__ == '__main__':
         case 2:
             with Pool(processes=threads) as executor:
                 executor.map(daily_check_in_start, accounts_dict)
+
+        case 3:
+            casino_type: int = int(input('\n1. Pilot'
+                                         '\n2. Pirate'
+                                         '\n3. Breakfast'
+                                         '\n4. Woodie'
+                                         '\n5. Hooper'
+                                         '\n6. Dino'
+                                         '\n7. Random'
+                                         '\nВыберите игру: '))
+
+            with Pool(processes=threads) as executor:
+                executor.map(lambda account: play_craw_games_start(account, casino_type), accounts_dict)
 
         case _:
             pass
