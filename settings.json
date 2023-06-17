@@ -1,0 +1,4 @@
+{
+  "rpc_url": "https://rpc.ankr.com/bsc",
+  "wait_transaction_result": true
+}

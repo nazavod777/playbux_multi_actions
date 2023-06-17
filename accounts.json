@@ -1,0 +1,20 @@
+[
+  {
+    "email": "email",
+    "password": "password",
+    "private_key": "key",
+    "proxy": "type://ip:port"
+  },
+  {
+    "email": "email2",
+    "password": "password2",
+    "private_key": "key2",
+    "proxy": "type://user:pass@ip:port"
+  },
+  {
+    "email": "email3",
+    "password": "password3",
+    "private_key": "key3",
+    "proxy": ""
+  }
+]
